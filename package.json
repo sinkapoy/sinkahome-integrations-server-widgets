@@ -1,0 +1,33 @@
+{
+    "name": "@sinkapoy/home-integrations-server-widgets",
+    "version": "0.0.1",
+    "description": "server widgets module for sinkahome",
+    "main": "./dist/node.js",
+    "typings": "./dist/index.d.ts",
+    "type": "module",
+    "author": "sinkapoy",
+    "license": "GPL-3.0-or-later",
+    "scripts": {
+        "build": "rollup -c rollup.config.ts --configPlugin @rollup/plugin-typescript && dts-bundle-generator -o dist/index.d.ts --project tsconfig.json src/node.ts"
+    },
+    "devDependencies": {
+        "@rollup/plugin-typescript": "^11.1.2",
+        "dts-bundle-generator": "^8.0.1",
+        "rollup": "^3.26.0",
+        "rollup-plugin-commonjs": "^10.1.0",
+        "rollup-plugin-json": "^4.0.0",
+        "rollup-plugin-node-resolve": "^5.2.0",
+        "rollup-plugin-sourcemaps": "^0.6.3",
+        "tslib": "^2.6.0"
+    },
+    "dependencies": {
+        "@ash.ts/ash": "^1.3.0",
+        "@sinkapoy/home-core": "^0.0.1",
+        "@sinkapoy/home-integrations-networking": "^0.0.1"
+    },
+    "files": [
+        "dist/index.d.ts",
+        "dist/node.js",
+        "dist/node.js.map"
+    ]
+}
