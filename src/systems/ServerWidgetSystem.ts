@@ -1,5 +1,5 @@
 import { Entity } from "@ash.ts/ash";
-import { FileT, IProperty, PropertiesComponent, PropertyAccessMode } from "@sinkapoy/home-core";
+import { FileT, PropertiesComponent, PropertyAccessMode } from "@sinkapoy/home-core";
 import { HomeSystem, IHomeCoreEvents, uuidT } from "@sinkapoy/home-core";
 import { ICommonWidgetConfig } from "../interfaces/ICommonWidgetConfig";
 import { WidgetComponent } from "../components/common";
@@ -26,11 +26,11 @@ export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents>{
     }
 
     onDestroy(): void {
-
+        // todo: remove widgets on detouch
     }
 
     onUpdate(dt: number): void {
-
+        //
     }
 
     onWriteProperty = (entity: Entity, propId: string, value: string | number | boolean) => {
@@ -48,7 +48,6 @@ export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents>{
     }
 
     private registerBuilder = (type: string, builder: BuilderFuncT) => {
-        // console.log('register builder for type ' + type);
         this.builders.set(type, builder);
     }
 
@@ -73,7 +72,6 @@ export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents>{
                 // todo: add logs
             }
         });
-        // console.log('added widgets to the engine', entities);
     }
 
 }
