@@ -1,6 +1,6 @@
 {
     "name": "@sinkapoy/home-integrations-server-widgets",
-    "version": "0.0.3",
+    "version": "0.1.0",
     "description": "server widgets module for sinkahome",
     "main": "./dist/node.js",
     "typings": "./dist/index.d.ts",
@@ -24,7 +24,7 @@
     },
     "dependencies": {
         "@ash.ts/ash": "^1.3.0",
-        "@sinkapoy/home-core": "file:../../sinkahome-core",
+        "@sinkapoy/home-core": ">=0.1.0",
         "@sinkapoy/home-integrations-networking": "*"
     },
     "files": [
