@@ -4,10 +4,11 @@ import { HomeSystem, IHomeCoreEvents, uuidT } from "@sinkapoy/home-core";
 import { ICommonWidgetConfig } from "../interfaces/ICommonWidgetConfig";
 import { WidgetComponent } from "../components/common";
 
-type BuilderFuncT = (config: ICommonWidgetConfig, widgets: Map<uuidT, Entity>) => Entity | undefined;
+type BuilderFuncT = (config: ICommonWidgetConfig | any, widgets: Map<uuidT, Entity>) => Entity | undefined;
 
 export interface IServerWidgetsEvents extends IHomeCoreEvents {
     'widgets:register-builder': [string, BuilderFuncT];
+    'widgets:from-config': [config: ICommonWidgetConfig];
 }
 
 export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents>{
@@ -22,6 +23,7 @@ export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents>{
         this.setupEvent('widgets:register-builder', this.registerBuilder);
         this.setupEvent('fileContent', this.readConfig);
         this.setupEvent('writeGadgetProperty', this.onWriteProperty);
+        this.setupEvent('widgets:from-config', this.onWidgetFromConfig.bind(this));
         setTimeout(() => this.engine.emit('readFile', ServerWidgetSystem.PATH), 20);
     }
 
@@ -54,24 +56,24 @@ export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents>{
     private readConfig = (file: FileT) => {
         if (file.path !== ServerWidgetSystem.PATH) return;
         const config = JSON.parse(file.content) as ICommonWidgetConfig[];
-        const entities: Entity[] = [];
         config.forEach(widget => {
-            const builder = this.builders.get(widget.type);
-            if (builder) {
-                const result = builder(widget, this.widgets);
-                if (result) {
-                    entities.push(result);
-                }
-            }
-        });
-        entities.forEach(entity => {
-            entity.add(new WidgetComponent());
-            if (!this.engine.getEntityByName(entity.name)) {
-                this.engine.addEntity(entity);
-            } else {
-                // todo: add logs
-            }
+            this.onWidgetFromConfig(widget);
         });
     }
 
+
+    private onWidgetFromConfig(config: ICommonWidgetConfig){
+        const builder = this.builders.get(config.type);
+            if (builder) {
+                const entity = builder(config, this.widgets);
+                if (entity) {
+                    entity.add(new WidgetComponent());
+                    if (!this.engine.getEntityByName(entity.name)) {
+                        this.engine.addEntity(entity);
+                    } else {
+                        // todo: add logs
+                    }
+                }
+            }
+    }
 }
