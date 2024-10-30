@@ -1,8 +1,8 @@
-import { Entity } from "@ash.ts/ash";
-import { FileT, PropertiesComponent, PropertyAccessMode } from "@sinkapoy/home-core";
-import { HomeSystem, IHomeCoreEvents, uuidT } from "@sinkapoy/home-core";
-import { ICommonWidgetConfig } from "../interfaces/ICommonWidgetConfig";
-import { WidgetComponent } from "../components/common";
+import { type Entity } from '@ash.ts/ash';
+import { type FileT, PropertiesComponent, PropertyAccessMode, HomeSystem, type IHomeCoreEvents, type uuidT } from '@sinkapoy/home-core';
+
+import { type ICommonWidgetConfig } from '../interfaces/ICommonWidgetConfig';
+import { WidgetComponent } from '../components/common';
 
 type BuilderFuncT = (config: ICommonWidgetConfig | any, widgets: Map<uuidT, Entity>) => Entity | undefined;
 
@@ -11,27 +11,27 @@ export interface IServerWidgetsEvents extends IHomeCoreEvents {
     'widgets:from-config': [config: ICommonWidgetConfig];
 }
 
-export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents>{
-    static PATH = 'server-data/widgets.conf.json'
+export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents> {
+    static PATH = 'server-data/widgets.conf.json';
 
     protected widgets = new Map<uuidT, Entity>();
 
     protected builders = new Map<string, BuilderFuncT>();
 
-    onInit() {
+    onInit () {
         this.engine.emit('appendFile', { path: ServerWidgetSystem.PATH, content: '' });
         this.setupEvent('widgets:register-builder', this.registerBuilder);
         this.setupEvent('fileContent', this.readConfig);
         this.setupEvent('writeGadgetProperty', this.onWriteProperty);
         this.setupEvent('widgets:from-config', this.onWidgetFromConfig.bind(this));
-        setTimeout(() => this.engine.emit('readFile', ServerWidgetSystem.PATH), 20);
+        setTimeout(() => { this.engine.emit('readFile', ServerWidgetSystem.PATH); }, 20);
     }
 
-    onDestroy(): void {
+    onDestroy (): void {
         // todo: remove widgets on detouch
     }
 
-    onUpdate(dt: number): void {
+    onUpdate (dt: number): void {
         //
     }
 
@@ -47,33 +47,32 @@ export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents>{
                 this.engine.emit('gadgetPropertyEvent', entity, prop);
             }
         }
-    }
+    };
 
-    private registerBuilder = (type: string, builder: BuilderFuncT) => {
+    private readonly registerBuilder = (type: string, builder: BuilderFuncT) => {
         this.builders.set(type, builder);
-    }
+    };
 
-    private readConfig = (file: FileT) => {
+    private readonly readConfig = (file: FileT) => {
         if (file.path !== ServerWidgetSystem.PATH) return;
         const config = JSON.parse(file.content) as ICommonWidgetConfig[];
         config.forEach(widget => {
             this.onWidgetFromConfig(widget);
         });
-    }
+    };
 
-
-    private onWidgetFromConfig(config: ICommonWidgetConfig){
+    private onWidgetFromConfig (config: ICommonWidgetConfig) {
         const builder = this.builders.get(config.type);
-            if (builder) {
-                const entity = builder(config, this.widgets);
-                if (entity) {
-                    entity.add(new WidgetComponent());
-                    if (!this.engine.getEntityByName(entity.name)) {
-                        this.engine.addEntity(entity);
-                    } else {
-                        // todo: add logs
-                    }
+        if (builder) {
+            const entity = builder(config, this.widgets);
+            if (entity) {
+                entity.add(new WidgetComponent());
+                if (!this.engine.getEntityByName(entity.name)) {
+                    this.engine.addEntity(entity);
+                } else {
+                    // todo: add logs
                 }
             }
+        }
     }
 }

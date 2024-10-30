@@ -1,8 +1,8 @@
-import { Entity } from "@ash.ts/ash";
-import { HomeEngineT, PropertiesComponent, Property, PropertyAccessMode, PropertyDataType, createGadget, homeEngine, uuidT } from "@sinkapoy/home-core";
-import { IServerWidgetsEvents } from "../systems/ServerWidgetSystem";
-import { ICommonWidgetConfig } from "../interfaces/ICommonWidgetConfig";
-import { buildWidgetBase } from "./basicBuilder";
+import { type Entity } from '@ash.ts/ash';
+import { type HomeEngineT, PropertiesComponent, PropertyAccessMode, PropertyDataType, homeEngine, type uuidT } from '@sinkapoy/home-core';
+import { type IServerWidgetsEvents } from '../systems/ServerWidgetSystem';
+import { type ICommonWidgetConfig } from '../interfaces/ICommonWidgetConfig';
+import { buildWidgetBase } from './basicBuilder';
 interface IBindingConfig extends ICommonWidgetConfig {
     bindInfo?: {
         uuid: uuidT;
@@ -24,20 +24,12 @@ engine.nextUpdate(() => {
             dataType: PropertyDataType.string,
             value: config.placeholder ?? '',
         });
-        if (config.bindInfo) {
-            props.createPropertyFromJson({
-                id: 'targetUuid',
-                accessMode: PropertyAccessMode.read,
-                dataType: PropertyDataType.string,
-                value: config.bindInfo.uuid,
-            });
-            props.createPropertyFromJson({
-                id: 'targetProperty',
-                accessMode: PropertyAccessMode.read,
-                dataType: PropertyDataType.string,
-                value: config.bindInfo.property,
-            });
-        }
+        props.createPropertyFromJson({
+            id: 'bindInfo',
+            accessMode: PropertyAccessMode.rw,
+            dataType: PropertyDataType.object,
+            value: config.bindInfo ?? {},
+        });
         return entity;
     });
 });

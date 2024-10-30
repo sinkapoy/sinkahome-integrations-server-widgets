@@ -1,8 +1,8 @@
-import { Entity } from "@ash.ts/ash";
-import { HomeEngineT, PropertiesComponent, Property, PropertyAccessMode, PropertyDataType, createGadget, homeEngine, uuidT } from "@sinkapoy/home-core";
-import { IServerWidgetsEvents } from "../systems/ServerWidgetSystem";
-import { ICommonWidgetConfig } from "../interfaces/ICommonWidgetConfig";
-import { buildWidgetBase } from "./basicBuilder";
+import { type Entity } from '@ash.ts/ash';
+import { type HomeEngineT, PropertiesComponent, PropertyAccessMode, PropertyDataType, homeEngine, type uuidT } from '@sinkapoy/home-core';
+import { type IServerWidgetsEvents } from '../systems/ServerWidgetSystem';
+import { type ICommonWidgetConfig } from '../interfaces/ICommonWidgetConfig';
+import { buildWidgetBase } from './basicBuilder';
 interface IFolderConfig extends ICommonWidgetConfig {
     description?: string;
     children: ICommonWidgetConfig[];
@@ -22,7 +22,7 @@ engine.nextUpdate(() => {
                 value: config.children.map(c => c.uuid) as object,
                 dataType: PropertyDataType.object,
             });
-            
+
             for (const child of config.children) {
                 homeEngine.emit('widgets:from-config', {
                     ...child,

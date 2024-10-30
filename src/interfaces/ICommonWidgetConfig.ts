@@ -1,4 +1,4 @@
-import { uuidT } from "@sinkapoy/home-core";
+import { type uuidT } from '@sinkapoy/home-core';
 
 export type CommonWidgetTypeT = 'switch';
 export interface ICommonWidgetConfig {

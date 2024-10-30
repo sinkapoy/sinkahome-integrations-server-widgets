@@ -1,7 +1,7 @@
-import { PropertiesComponent, PropertyAccessMode, PropertyDataType, createGadget } from "@sinkapoy/home-core";
-import { ICommonWidgetConfig } from "../interfaces/ICommonWidgetConfig";
+import { PropertiesComponent, PropertyAccessMode, PropertyDataType, createGadget } from '@sinkapoy/home-core';
+import { type ICommonWidgetConfig } from '../interfaces/ICommonWidgetConfig';
 
-export function buildWidgetBase(config: ICommonWidgetConfig) {
+export function buildWidgetBase (config: ICommonWidgetConfig) {
     const entity = createGadget(config.uuid, true);
     const props = entity.get(PropertiesComponent)!;
     props.createPropertyFromJson({
@@ -52,13 +52,14 @@ export function buildWidgetBase(config: ICommonWidgetConfig) {
         dataType: PropertyDataType.string,
         value: config.description ?? '',
     });
-    if (config.parent)
+    if (config.parent) {
         props.createPropertyFromJson({
             id: 'parent',
             accessMode: PropertyAccessMode.read,
             dataType: PropertyDataType.string,
             value: config.parent,
         });
+    }
 
     return entity;
 }
