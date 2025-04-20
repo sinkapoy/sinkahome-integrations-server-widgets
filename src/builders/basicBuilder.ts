@@ -1,6 +1,7 @@
 import { PropertiesComponent, PropertyAccessMode, PropertyDataType, createGadget } from '@sinkapoy/home-core';
 import { type ICommonWidgetConfig } from '../interfaces/ICommonWidgetConfig';
 
+// TODO: use Partial<ICommonWidgetConfig>
 export function buildWidgetBase (config: ICommonWidgetConfig) {
     const entity = createGadget(config.uuid, true);
     const props = entity.get(PropertiesComponent)!;

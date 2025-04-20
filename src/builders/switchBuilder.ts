@@ -14,13 +14,7 @@ engine.nextUpdate(() => {
         const entity = buildWidgetBase(config);
         const props = entity.get(PropertiesComponent)!;
         props.createPropertyFromJson({
-            id: 'key',
-            accessMode: PropertyAccessMode.rwn,
-            dataType: PropertyDataType.boolean,
-            value: false,
-        });
-        props.createPropertyFromJson({
-            id: 'led',
+            id: 'on',
             accessMode: PropertyAccessMode.rwn,
             dataType: PropertyDataType.boolean,
             value: false,

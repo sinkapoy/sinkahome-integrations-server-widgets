@@ -1,5 +1,5 @@
 import { type Entity } from '@ash.ts/ash';
-import { type FileT, PropertiesComponent, PropertyAccessMode, HomeSystem, type IHomeCoreEvents, type uuidT } from '@sinkapoy/home-core';
+import { type FileT, PropertiesComponent, PropertyAccessMode, HomeSystem, type IHomeCoreEvents, type uuidT, serviceLocator } from '@sinkapoy/home-core';
 
 import { type ICommonWidgetConfig } from '../interfaces/ICommonWidgetConfig';
 import { WidgetComponent } from '../components/common';
@@ -18,21 +18,48 @@ export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents> {
 
     protected builders = new Map<string, BuilderFuncT>();
 
-    onInit () {
-        this.engine.emit('appendFile', { path: ServerWidgetSystem.PATH, content: '' });
+    protected fileSize = 0;
+
+    protected fileModifyTime = 0;
+
+    protected updateFileMetaTimer = 2000;
+
+    protected updateFileMetaCountdown = this.updateFileMetaTimer;
+
+    async onInit() {
         this.setupEvent('widgets:register-builder', this.registerBuilder);
-        this.setupEvent('fileContent', this.readConfig);
-        this.setupEvent('writeGadgetProperty', this.onWriteProperty);
         this.setupEvent('widgets:from-config', this.onWidgetFromConfig.bind(this));
-        setTimeout(() => { this.engine.emit('readFile', ServerWidgetSystem.PATH); }, 20);
+        const fs = serviceLocator().get('files');
+        if (!await fs.exist(ServerWidgetSystem.PATH)) {
+            await fs.write(ServerWidgetSystem.PATH, '[]');
+        } else {
+            this.readConfig(await fs.read(ServerWidgetSystem.PATH));
+        }
+        const meta = fs.fileMetadata(ServerWidgetSystem.PATH);
+        this.fileSize = meta.size;
+        this.fileModifyTime = meta.mTimeMs;
+        this.setupEvent('writeGadgetProperty', this.onWriteProperty);
     }
 
-    onDestroy (): void {
+    onDestroy(): void {
         // todo: remove widgets on detouch
     }
 
-    onUpdate (dt: number): void {
-        //
+    onUpdate(dt: number): void {
+        if(this.fileSize){
+            this.updateFileMetaCountdown -= dt;
+            if(this.updateFileMetaCountdown <= 0){
+                this.updateFileMetaCountdown = this.updateFileMetaTimer;
+                const fs = serviceLocator().get('files');
+                const meta = fs.fileMetadata(ServerWidgetSystem.PATH);
+                if(meta.size !== this.fileSize || meta.mTimeMs !== this.fileModifyTime){
+                    this.fileSize = meta.size;
+                    this.fileModifyTime = meta.mTimeMs;
+
+                    fs.read(ServerWidgetSystem.PATH).then(this.readConfig);
+                }
+            }
+        }
     }
 
     onWriteProperty = (entity: Entity, propId: string, value: string | number | boolean) => {
@@ -53,15 +80,19 @@ export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents> {
         this.builders.set(type, builder);
     };
 
-    private readonly readConfig = (file: FileT) => {
-        if (file.path !== ServerWidgetSystem.PATH) return;
-        const config = JSON.parse(file.content) as ICommonWidgetConfig[];
-        config.forEach(widget => {
-            this.onWidgetFromConfig(widget);
-        });
+    private readonly readConfig = (file: string) => {
+        try {
+            const config = JSON.parse(file) as ICommonWidgetConfig[];
+            config.forEach(widget => {
+                this.onWidgetFromConfig(widget);
+            });
+        } catch (e) {
+            console.error(e);
+        }
+
     };
 
-    private onWidgetFromConfig (config: ICommonWidgetConfig) {
+    private onWidgetFromConfig(config: ICommonWidgetConfig) {
         const builder = this.builders.get(config.type);
         if (builder) {
             const entity = builder(config, this.widgets);
@@ -70,9 +101,22 @@ export class ServerWidgetSystem extends HomeSystem<IServerWidgetsEvents> {
                 if (!this.engine.getEntityByName(entity.name)) {
                     this.engine.addEntity(entity);
                 } else {
-                    // todo: add logs
+                    const original = this.engine.getByUUID(entity.name)!;
+                    const originalProps = original.get(PropertiesComponent);
+                    const newProps = entity.get(PropertiesComponent);
+                    if(originalProps && newProps){
+                        newProps.forEach(prop=>{
+                            newProps.add(prop);
+                            this.engine.emit('gadgetPropertyEvent', original, prop);
+                        });
+                        
+                    }
                 }
+            } else {
+                console.error('cant create a widget');
             }
+        } else {
+            console.error('no builder for ', config);
         }
     }
 }
